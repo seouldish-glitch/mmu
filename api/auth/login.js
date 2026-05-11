@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mumms_inventory';
+const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'mumms_inventory';
 
 export default async function handler(req, res) {
