@@ -43,25 +43,27 @@ export default defineConfig({
     port: 5173,
     https: true, // මේකත් දාන්න
     allowedHosts: true,
-    proxy: process.env.NODE_ENV === 'development' ? {
+    proxy: {
       '/api': {
-        target: 'http://127.0.0.1:5001',
+        target: process.env.NODE_ENV === 'development'
+          ? 'http://127.0.0.1:5001'
+          : (process.env.VITE_API_URL || 'https://your-backend-url.vercel.app'),
         changeOrigin: true,
         secure: false,
       },
-    } : undefined,
+    },
   },
   preview: {
     host: true,
     port: 4173,
     https: true,
     allowedHosts: true,
-    proxy: process.env.NODE_ENV === 'development' ? {
+    proxy: {
       '/api': {
-        target: 'http://127.0.0.1:5001',
+        target: process.env.VITE_API_URL || 'https://your-backend-url.vercel.app',
         changeOrigin: true,
         secure: false,
       },
-    } : undefined,
+    },
   }
 })
