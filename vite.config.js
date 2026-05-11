@@ -43,25 +43,25 @@ export default defineConfig({
     port: 5173,
     https: true, // මේකත් දාන්න
     allowedHosts: true,
-    proxy: {
+    proxy: process.env.NODE_ENV === 'development' ? {
       '/api': {
         target: 'http://127.0.0.1:5001',
         changeOrigin: true,
         secure: false,
       },
-    },
+    } : undefined,
   },
   preview: {
     host: true,
     port: 4173,
     https: true,
     allowedHosts: true,
-    proxy: {
+    proxy: process.env.NODE_ENV === 'development' ? {
       '/api': {
         target: 'http://127.0.0.1:5001',
         changeOrigin: true,
         secure: false,
       },
-    },
+    } : undefined,
   }
 })
