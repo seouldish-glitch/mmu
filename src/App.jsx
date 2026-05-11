@@ -1,9 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
-import { auth, db } from "./firebase";
 import InventoryManager from "./InventoryManager";
 import EquipmentDispatch from "./EquipmentDispatch";
 
@@ -162,44 +159,33 @@ function AuthGate({ onLogin }) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // For simplicity, assign role based on email or something. In real app, store in Firestore.
-        const role = getRoleFromEmail(user.email);
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('userName', user.displayName || user.email);
-        onLogin({ role, displayName: user.displayName || user.email, email: user.email });
-      }
-    });
-    return unsubscribe;
-  }, [onLogin]);
-
-  const getRoleFromEmail = (email) => {
-    // Simple role assignment based on email
-    const roles = {
-      'revdilshanstbenedictscollegemedia@gmail.com': 'MIC',
-      'senithastbenedictscollegemedia@gmail.com': 'President',
-      'thisumstbenedictscollegemedia@gmail.com': 'Photographer',
-      'dabarestbenedictscollegemedia@gmail.com': 'Photographer',
-      'mihinulastbenedictscollegemedia@gmail.com': 'Photographer',
-      'ashenstbenedictscollegemedia@gmail.com': 'Vice President',
-      'jovelstbenedictscolllegemedia@gmail.com': 'Coordinator',
-      'nethulastbenedictscollegemedia@gmail.com': 'Photographer'
-    };
-    return roles[email] || 'Photographer'; // default
-  };
-
   const handleEmailAuth = async (event) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
       const cleanEmail = email.trim();
-      await signInWithEmailAndPassword(auth, cleanEmail, password);
-      // Firebase will handle the auth state change
-    } catch (error) {
-      alert("වැරදි ඊමේල් එකක් හෝ පාස්වර්ඩ් එකක්: " + error.message);
+      const response = await fetch(`/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password }),
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        alert("සර්වර් එකෙන් නිවැරදි පිළිතුරක් ලැබුණේ නැත!");
+        return;
+      }
+
+      if (data.success) {
+        localStorage.setItem('userRole', data.role);
+        localStorage.setItem('userName', data.name);
+        onLogin({ role: data.role, displayName: data.name, email: cleanEmail });
+      } else {
+        alert(data.message || "ලොගින් වීමට නොහැක!");
+      }
     } finally {
       setIsLoading(false);
     }
